@@ -1,0 +1,9 @@
+{
+	  "domain": "heweather",
+	    "version": "1.0",
+	      "name": "heweather",
+	        "documentation": "Elliot",
+		  "requirements": ["requests"],
+		    "codeowners": [],
+		      "dependencies": []
+}
