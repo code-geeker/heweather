@@ -362,13 +362,13 @@ class WeatherData(object):
             self._pm25 = con_air.get("now").get("pm2p5")
             self._main = con_air.get("now").get("primary")
 
-            self._comf  = con_life_index.get("daily")[8].get("name")
-            self._drsg  = con_life_index.get("daily")[10].get("name")
-            self._flu   = con_life_index.get("daily")[12].get("name")
-            self._sport = con_life_index.get("daily")[15].get("name")
-            self._trav  = con_life_index.get("daily")[7].get("name")
-            self._uv    = con_life_index.get("daily")[6].get("name")  # 晾晒指数
-            self._cw    = con_life_index.get("daily")[9].get("name")  #空气污染扩散条件指数
+            self._comf  = con_life_index.get("daily")[8].get("category")
+            self._drsg  = con_life_index.get("daily")[10].get("category")
+            self._flu   = con_life_index.get("daily")[12].get("category")
+            self._sport = con_life_index.get("daily")[15].get("category")
+            self._trav  = con_life_index.get("daily")[7].get("category")
+            self._uv    = con_life_index.get("daily")[6].get("category")  # 晾晒指数
+            self._cw    = con_life_index.get("daily")[9].get("category")  #空气污染扩散条件指数
 
             life_index_list['comf_txt'] = con_life_index.get("daily")[8].get("text")
             life_index_list['drsg_txt'] = con_life_index.get("daily")[10].get("text")
