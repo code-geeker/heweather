@@ -18,8 +18,8 @@ CONF_CITY = "city"
 # CONF_AQI_CITY = "aqi_city"
 CONF_APPKEY = "appkey"
 
-life_index_list = {"comf_txt": None, "drsg_txt": None, "flu_txt": None,
-                   "sport_txt": None, "trav_txt": None, "uv_txt": None, "cw_txt": None}
+life_index_list = {'comf_txt': None, 'drsg_txt': None, 'flu_txt': None,
+                   'sport_txt': None, 'trav_txt': None, 'uv_txt': None, 'cw_txt': None}
 
 OPTIONS = dict(fl=["HeWeather_fl", "实时体感温度", "mdi:temperature-celsius", "℃"],
                tmp=["HeWeather_tmp", "实时室外温度", "mdi:thermometer", "℃"],
@@ -37,16 +37,12 @@ OPTIONS = dict(fl=["HeWeather_fl", "实时体感温度", "mdi:temperature-celsiu
                pm10=["HeWeather_pm10", "PM10", "mdi:blur", "μg/m³"],
                pm25=["HeWeather_pm25", "PM2.5", "mdi:blur", "μg/m³"],
                comf=["HeWeather_comf", "舒适度指数", "mdi:chart-bubble", None],
-               cw=["HeWeather_cw", "洗车指数", "mdi:car-wash", None],
                drsg=["HeWeather_drsg", "穿衣指数", "mdi:tie", None],
-               flu=["HeWeather_flu", "感冒指数", "mdi:seat-individual-suite", None],
-               sport=["HeWeather_sport", "运动指数", "mdi:bike", None],
-               uv=["HeWeather_uv", "紫外线指数", "mdi:sunglasses", None],
                trav=["HeWeather_trav", "出行指数", "mdi:bus", None],
-               tmp_max=["HeWeather_tmp_max", "今日最高温度", "mdi:mdi:thermometer", "℃"],
-               tmp_min=["HeWeather_tmp_min", "今日最低温度", "mdi:mdi:thermometer", "℃"],
-               pop=["HeWeather_pop", "降水概率", "mdi:weather-rainy", "%"],
-               cond_code=[])
+               sport=["HeWeather_sport", "运动指数", "mdi:bike", None],
+               flu=["HeWeather_flu", "感冒指数", "mdi:seat-individual-suite", None],
+               cw=["HeWeather_cw", "空气污染扩散条件指数", "mdi:airballoon", None],
+               uv=["HeWeather_uv", "晾晒指数", "mdi:weather-sunny", None])
 
 ATTR_UPDATE_TIME = "更新时间"
 ATTRIBUTION = "Powered by He Weather"
@@ -116,17 +112,17 @@ class HeWeatherSensor(Entity):
         if self._friendly_name == "舒适度指数":
             ATTRIBUTION = life_index_list['comf_txt']
         elif self._friendly_name == "穿衣指数":
-            ATTRIBUTION = life_index_list["drsg_txt"]
+            ATTRIBUTION = life_index_list['drsg_txt']
         elif self._friendly_name == "感冒指数":
-            ATTRIBUTION = life_index_list["flu_txt"]
+            ATTRIBUTION = life_index_list['flu_txt']
         elif self._friendly_name == "运动指数":
-            ATTRIBUTION = life_index_list["sport_txt"]
+            ATTRIBUTION = life_index_list['sport_txt']
         elif self._friendly_name == "出行指数":
             ATTRIBUTION = life_index_list["trav_txt"]
-        elif self._friendly_name == "紫外线指数":
-            ATTRIBUTION = life_index_list["uv_txt"]
-        elif self._friendly_name == "洗车指数":
-            ATTRIBUTION = life_index_list["cw_txt"]
+        elif self._friendly_name == "晾晒指数":
+            ATTRIBUTION = life_index_list['uv_txt']
+        elif self._friendly_name == "空气污染扩散条件指数":
+            ATTRIBUTION = life_index_list['cw_txt']
         else:
             ATTRIBUTION = "Powered by HeWeather"
 
@@ -183,20 +179,13 @@ class HeWeatherSensor(Entity):
             self._state = self._data.trav
         elif self._type == "uv":
             self._state = self._data.uv
-        elif self._type == "tmp_max":
-            self._state = self._data.tmp_max
-        elif self._type == "tmp_min":
-            self._state = self._data.tmp_min
-        elif self._type == "pop":
-            self._state = self._data.pop
 
 
 class WeatherData(object):
     def __init__(self, city, appkey):
         self._url = "https://devapi.qweather.com/v7/weather/now"
-        self._air_url = "https://free-api.heweather.net/s6/air/now"
-        self._life_index_url = "https://free-api.heweather.net/s6/weather/lifestyle"
-        self._long_weather_forcasting_url = "https://free-api.heweather.net/s6/weather/forecast"
+        self._air_url = "https://devapi.qweather.com/v7/air/now"
+        self._life_index_url = "https://devapi.qweather.com/v7/indices/1d?type=0"
         self._params = {"location": city, "key": appkey}
         # self._aqi_params = {"location": aqi_city, "key": appkey}
         self._fl = None
@@ -222,9 +211,6 @@ class WeatherData(object):
         self._sport = None
         self._uv = None
         self._trav = None
-        self._tmp_max = None
-        self._tmp_min = None
-        self._pop = None
 
     @property
     def fl(self):
@@ -314,41 +300,26 @@ class WeatherData(object):
     def trav(self):
         return self._trav
 
-    @property
-    def tmp_max(self):
-        return self._tmp_max
-
-    @property
-    def tmp_min(self):
-        return self._tmp_min
-
-    @property
-    def pop(self):
-        return self._pop
 
     @property
     def updatetime(self):
         return self._updatetime
 
     def now(self):
-        now_weather = requests.post(self._url, self._params)
+        now_weather = requests.get(self._url, self._params)
         con = now_weather.json()
         return con
 
     def air(self):
-        r_air = requests.post(self._air_url, self._params)
+        r_air = requests.get(self._air_url, self._params)
         con_air = r_air.json()
         return con_air
 
     def life(self):
-        life_index = requests.post(self._life_index_url, self._params)
+        life_index = requests.get(self._life_index_url, self._params)
         con_life_index = life_index.json()
         return con_life_index
 
-    def today(self):
-        today_weather = requests.post(self._long_weather_forcasting_url, self._params)
-        con_today_weather = today_weather.json()
-        return con_today_weather
 
     @Throttle(TIME_BETWEEN_UPDATES)
     def update(self):
@@ -371,55 +342,43 @@ class WeatherData(object):
             time.sleep(0.01)
             con_life_index = self.life()
             _LOGGER.error("Unable to connect to HeWeather. %s", error)
-        try:
-            today_weather = self.today()
-        except (ConnectError, HTTPError, Timeout, ValueError) as error:
-            time.sleep(0.01)
-            today_weather = self.today()
-            _LOGGER.error("Unable to connect to HeWeather. %s", error)
 
         _LOGGER.info("Update from HeWeather...")
         try:
-            self._fl = con.get("now").get("fl")
-            self._cond_txt = con.get("HeWeather6")[0].get("now").get("cond_txt")
-            self._hum = con.get("HeWeather6")[0].get("now").get("hum")
-            self._pcpn = con.get("HeWeather6")[0].get("now").get("pcpn")
-            self._pres = con.get("HeWeather6")[0].get("now").get("pres")
-            self._tmp = con.get("HeWeather6")[0].get("now").get("tmp")
-            self._vis = con.get("HeWeather6")[0].get("now").get("vis")
-            self._wind_spd = con.get("HeWeather6")[0].get("now").get("wind_spd")
-            self._wind_dir = con.get("HeWeather6")[0].get("now").get("wind_dir")
-            self._cond_code = con.get("HeWeather6")[0].get("now").get("cond_code")
+            self._fl = con.get("now").get("feelsLike")
+            self._cond_txt = con.get("now").get("text")
+            self._hum = con.get("now").get("humidity")
+            self._pcpn = con.get("now").get("precip")
+            self._pres = con.get("now").get("pressure")
+            self._tmp = con.get("now").get("temp")
+            self._vis = con.get("now").get("vis")
+            self._wind_spd = con.get("now").get("windSpeed")
+            self._wind_dir = con.get("now").get("windDir")
+            self._wind_sc  = con.get("now").get("windScale")
 
-            self._qlty = con_air.get("HeWeather6")[0].get("air_now_city").get("qlty")
-            self._aqi = con_air.get("HeWeather6")[0].get("air_now_city").get("aqi")
-            self._pm10 = con_air.get("HeWeather6")[0].get("air_now_city").get("pm10")
-            self._pm25 = con_air.get("HeWeather6")[0].get("air_now_city").get("pm25")
-            if con_air.get("HeWeather6")[0].get("air_now_city").get("main") == "-":
-                if int(self._pm10) > int(self._pm25):
-                    self._main = "PM10"
-                elif int(self._pm10) < int(self._pm25):
-                    self._main = "PM25"
-                else:
-                    self._main = "-"
-            else:
-                self._main = con_air.get("HeWeather6")[0].get("air_now_city").get("main")
+            self._qlty = con_air.get("now").get("category")
+            self._aqi  = con_air.get("now").get("aqi")
+            self._pm10 = con_air.get("now").get("pm10")
+            self._pm25 = con_air.get("now").get("pm2p5")
+            self._main = con_air.get("now").get("primary")
 
-            self._comf = con_life_index.get("HeWeather6")[0].get("lifestyle")[0].get("brf")
-            self._drsg = con_life_index.get("HeWeather6")[0].get("lifestyle")[1].get("brf")
-            self._flu = con_life_index.get("HeWeather6")[0].get("lifestyle")[2].get("brf")
-            self._sport = con_life_index.get("HeWeather6")[0].get("lifestyle")[3].get("brf")
-            self._trav = con_life_index.get("HeWeather6")[0].get("lifestyle")[4].get("brf")
-            self._uv = con_life_index.get("HeWeather6")[0].get("lifestyle")[5].get("brf")
-            self._cw = con_life_index.get("HeWeather6")[0].get("lifestyle")[6].get("brf")
-            life = ["comf_txt", "drsg_txt", "flu_txt", "sport_txt", "trav_txt", "uv_txt", "cw_txt"]
-            for i, index in enumerate(life):
-                life_index_list[index] = con_life_index["HeWeather6"][0]["lifestyle"][i]["txt"]
+            self._comf  = con_life_index.get("daily")[8].get("name")
+            self._drsg  = con_life_index.get("daily")[10].get("name")
+            self._flu   = con_life_index.get("daily")[12].get("name")
+            self._sport = con_life_index.get("daily")[15].get("name")
+            self._trav  = con_life_index.get("daily")[7].get("name")
+            self._uv    = con_life_index.get("daily")[6].get("name")  # 晾晒指数
+            self._cw    = con_life_index.get("daily")[9].get("name")  #空气污染扩散条件指数
 
-            self._tmp_max = today_weather.get("HeWeather6")[0].get("daily_forecast")[0].get("tmp_max")
-            self._tmp_min = today_weather.get("HeWeather6")[0].get("daily_forecast")[0].get("tmp_min")
-            self._pop = today_weather.get("HeWeather6")[0].get("daily_forecast")[0].get("pop")
-            self._wind_sc = today_weather.get("HeWeather6")[0].get("daily_forecast")[0].get("wind_sc")
+            life_index_list['comf_txt'] = con_life_index.get("daily")[8].get("text")
+            life_index_list['drsg_txt'] = con_life_index.get("daily")[10].get("text")
+            life_index_list['flu_txt'] = con_life_index.get("daily")[12].get("text")
+            life_index_list['sport_txt'] = con_life_index.get("daily")[15].get("text")
+            life_index_list['trav_txt'] = con_life_index.get("daily")[7].get("text")
+            life_index_list['uv_txt'] = con_life_index.get("daily")[6].get("text")
+            life_index_list['cw_txt'] = con_life_index.get("daily")[9].get("text")
+
+
         except Exception as e:
             logging.info(e)
 
